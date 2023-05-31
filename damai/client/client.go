@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	detailApi = "https://mtop.damai.cn/h5/mtop.alibaba.damai.detail.getdetail/1.2"
+	detailApi = "https://mtop.damai.cn/h5/mtop.alibaba.damai.detail.getdetail/1.2/"
 )
 
 var client = resty.New()
 
-const cookie = "_m_h5_tk=e4ebc9b8f9dcae8a57e20ff6b24aac9d_1685533582032; _m_h5_tk_enc=f5406d740eb2626d33b3a16c268293fa; isg=BL-_Qy8354EJk-OdVSLninK9TpJJpBNGMh0_ylGMWm62YN3iWXWAlRt2pjaePOu-"
+const cookie = "_m_h5_tk=fd72759a5183b31dd142738f419e393a_1685544746290; _m_h5_tk_enc=412d4a6d4f62443fb194fbcf1a98f814; _samesite_flag_=true; cookie2=1d8b887e0a28c76f54ba2718316d9223; t=71330ebfc5d728473d1825c38aa3110d; _tb_token_=16dee5eeabe3; l=fBQmMP_nNwtth-NTBOfwPurza77OSIRAguPzaNbMi9fPOefB5sWPW1aouW86C3GRF6oMR35xJrbyBeYBqQd-nxv9OEhO3tkmn_sLn7C..; isg=BDo6UMetCsIlO4YuN6-y-Sa4i2Bc677FzdNSzEQz502MN9hxLHjO3IgBg-XrpzZd"
 
 // Param 请求传输结构体
 type Param struct {
@@ -39,15 +39,15 @@ type Param struct {
 
 // ParamData Data结构体
 type ParamData struct {
-	ItemId    string `json:"item_id"`
-	DMChannel string `json:"dm_channel"`
+	ItemId    string `json:"itemId"`
+	DMChannel string `json:"dmChannel"`
 }
 
 // InitParam 初始化Param
 func InitParam(cookie string, tickieId string) map[string]string {
 	data := initParamData(tickieId)
 	now := int(time.Now().UnixMilli())
-	s := fmt.Sprintf("%s&%s&%s&%s", cookie, strconv.Itoa(now), "12574478", data)
+	s := fmt.Sprintf("%s&%s&%s&%s", "fd72759a5183b31dd142738f419e393a_1685544746290;", strconv.Itoa(now), "12574478", data)
 
 	return map[string]string{
 		"jsv":                      "2.7.2",
@@ -81,8 +81,13 @@ func initParamData(tickieId string) string {
 
 func RequestTickDetail() {
 	params := InitParam(cookie, "720545258599")
+	client.SetDebug(true)
 	resp, _ := client.R().
 		SetQueryParams(params).
+		SetHeader("origin", "https://m.damai.cn/").
+		SetHeader("referer", "https://m.damai.cn/").
+		SetHeader("cookie", cookie).
 		Get(detailApi)
+	fmt.Println(resp.Request.RawRequest.URL)
 	fmt.Println(resp)
 }
