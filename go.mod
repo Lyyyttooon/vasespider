@@ -1,4 +1,4 @@
-module vasespider
+module github.com/Lyyyttooon/vasespider
 
 go 1.20
 

@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"vasespider/damai/client"
+
+	"github.com/Lyyyttooon/vasespider/damai/client"
 )
 
 type TickiesDetail struct {

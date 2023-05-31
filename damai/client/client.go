@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	"vasespider/utils"
 
+	"github.com/Lyyyttooon/vasespider/utils"
 	"github.com/go-resty/resty/v2"
 )
 
