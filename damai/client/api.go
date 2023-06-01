@@ -4,18 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/Lyyyttooon/vasespider/utils"
 )
 
+// api数据
 const (
 	detailApi = "https://mtop.damai.cn/h5/mtop.alibaba.damai.detail.getdetail/1.2/?"
 )
 
-// DetailParam 详情请求传输结构体
-type DetailParam struct {
+// 固定参数
+const (
+	paramsJSV = "2.7.2"
+	paramsAppKey = "12574478"
+
+	paramsDatailApi = "mtop.alibaba.damai.detail.getdetail"
+)
+
+// CommonParams 通用请求传输结构体
+type CommonParams struct {
 	JSV                   string `json:"jsv" url:"jsv"`
 	AppKey                string `json:"appKey" url:"appKey"`
 	T                     int64  `json:"t" url:"t"`
@@ -33,40 +41,47 @@ type DetailParam struct {
 	Data                  string `json:"data" url:"data"`
 }
 
-// DetailParamData 详情请求data结构体
-type DetailParamData struct {
-	ItemId    string `json:"itemId"`
-	DMChannel string `json:"dmChannel"`
-}
-
-// InitDetailParam 初始化DetailParam
-func InitDetailParam(cookie string, tickieId string) DetailParam {
-	data := initDetailParamData(tickieId)
+// initCommonParams 生成通用参数
+func initCommonParams() CommonParams {
 	now := time.Now().UnixMilli()
-	s := fmt.Sprintf("%s&%s&%s&%s", "20071fdac63b5c2af27885ebfd67f770", strconv.Itoa(int(now)), "12574478", data)
-
-	return DetailParam{
-		JSV:                   "2.7.2",
-		AppKey:                "12574478",
+	return CommonParams{
+		JSV:                   paramsJSV,
+		AppKey:                paramsAppKey,
 		T:                     now,
-		Sign:                  utils.MD5(s),
 		Type:                  "originaljson",
 		DataType:              "json",
 		V:                     "2.0",
 		H5Request:             "true",
 		AntiCreep:             "true",
 		AntiFlood:             "true",
-		Api:                   "mtop.alibaba.detail.subpage.getdetail",
 		Method:                "GET",
 		TbEagleeyexScmProject: "20190509-aone2-join-test",
 		RequestStart:          now - 1,
-		Data:                  url.QueryEscape(data),
 	}
+}
+
+// DetailParamsData 详情请求data结构体
+type DetailParamsData struct {
+	ItemId    string `json:"itemId"`
+	DMChannel string `json:"dmChannel"`
+}
+
+// InitDetailParams 初始化DetailParam
+func InitDetailParams(tickieId string) CommonParams {
+	commonParam := initCommonParams()
+
+	data := initDetailParamData(tickieId)
+
+	commonParam.Sign = genSign("02ddaabc5dceb1d38decb2dbde13dd5e", commonParam.T, paramsAppKey, data)
+	commonParam.Data = url.QueryEscape(data)
+	commonParam.Api = paramsDatailApi
+
+	return commonParam
 }
 
 // initDetailParamData 初始化DetailParamData
 func initDetailParamData(tickieId string) string {
-	data := DetailParamData{
+	data := DetailParamsData{
 		ItemId:    tickieId,
 		DMChannel: "damai@damaih5_h5",
 	}
@@ -75,11 +90,15 @@ func initDetailParamData(tickieId string) string {
 	return string(stringData)
 }
 
-func RequestTickDetail() {
-	params := InitDetailParam(cookie, "720545258599")
+// genSign 生成hash值
+func genSign(token string, now int64, appKey string, data string) string {
+	return utils.MD5(fmt.Sprintf("%s&%d&%s&%s", token, now, appKey, data))
+}
+
+// RequestTickDetail 请求票务详情
+func RequestTickDetail(cookie, itemId string) {
+	params := InitDetailParams(itemId)
 	str := utils.ParseQuery(params)
-	fmt.Println(str)
-	client.SetDebug(true)
 	resp, _ := client.R().
 		SetHeader("origin", "https://m.damai.cn/").
 		SetHeader("referer", "https://m.damai.cn/").
