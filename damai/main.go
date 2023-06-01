@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Lyyyttooon/vasespider/damai/client"
 )
 
@@ -16,6 +14,5 @@ type Temp struct {
 }
 
 func main() {
-	fmt.Println("Hello, Damai")
 	client.RequestTickDetail()
 }
