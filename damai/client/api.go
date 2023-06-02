@@ -7,7 +7,14 @@ import (
 	"time"
 
 	"github.com/Lyyyttooon/vasespider/utils"
+	"github.com/go-resty/resty/v2"
 )
+
+// client http客户端
+var client = resty.New()
+
+// UserAgent 浏览器UA
+const UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
 
 // api数据
 const (
@@ -16,7 +23,7 @@ const (
 
 // 固定参数
 const (
-	paramsJSV = "2.7.2"
+	paramsJSV    = "2.7.2"
 	paramsAppKey = "12574478"
 
 	paramsDatailApi = "mtop.alibaba.damai.detail.getdetail"
@@ -67,12 +74,12 @@ type DetailParamsData struct {
 }
 
 // InitDetailParams 初始化DetailParam
-func InitDetailParams(tickieId string) CommonParams {
+func InitDetailParams(client *Client) CommonParams {
 	commonParam := initCommonParams()
 
-	data := initDetailParamData(tickieId)
+	data := initDetailParamData(client.ItemId)
 
-	commonParam.Sign = genSign("02ddaabc5dceb1d38decb2dbde13dd5e", commonParam.T, paramsAppKey, data)
+	commonParam.Sign = genSign(client.Token, commonParam.T, paramsAppKey, data)
 	commonParam.Data = url.QueryEscape(data)
 	commonParam.Api = paramsDatailApi
 
@@ -80,9 +87,9 @@ func InitDetailParams(tickieId string) CommonParams {
 }
 
 // initDetailParamData 初始化DetailParamData
-func initDetailParamData(tickieId string) string {
+func initDetailParamData(itemId string) string {
 	data := DetailParamsData{
-		ItemId:    tickieId,
+		ItemId:    itemId,
 		DMChannel: "damai@damaih5_h5",
 	}
 	stringData, _ := json.Marshal(data)
@@ -96,15 +103,14 @@ func genSign(token string, now int64, appKey string, data string) string {
 }
 
 // RequestTickDetail 请求票务详情
-func RequestTickDetail(cookie, itemId string) {
-	params := InitDetailParams(itemId)
+func RequestTickDetail(c *Client) {
+	params := InitDetailParams(c)
 	str := utils.ParseQuery(params)
 	resp, _ := client.R().
 		SetHeader("origin", "https://m.damai.cn/").
 		SetHeader("referer", "https://m.damai.cn/").
-		SetHeader("cookie", cookie).
+		SetHeader("cookie", c.Cookie).
 		SetHeader("User-Agent", UserAgent).
 		Get(detailApi + str)
-	fmt.Println(resp.Request.RawRequest.URL)
 	fmt.Println(resp)
 }
