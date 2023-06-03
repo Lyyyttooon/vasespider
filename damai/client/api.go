@@ -15,7 +15,7 @@ const UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/5
 
 // api数据
 const (
-	detailApi = "https://mtop.damai.cn/h5/mtop.alibaba.damai.detail.getdetail/1.2/?"
+	detailApi = "https://mtop.damai.cn/h5/mtop.alibaba.detail.subpage.getdetail/2.0/?"
 )
 
 // 固定参数
@@ -23,7 +23,7 @@ const (
 	paramsJSV    = "2.7.2"
 	paramsAppKey = "12574478"
 
-	paramsDatailApi = "mtop.alibaba.damai.detail.getdetail"
+	paramsDatailApi = "mtop.alibaba.detail.subpage.getdetail"
 )
 
 // CommonParams 通用请求传输结构体
@@ -64,12 +64,6 @@ func initCommonParams() CommonParams {
 	}
 }
 
-// DetailParamsData 详情请求data结构体
-type DetailParamsData struct {
-	ItemId    string `json:"itemId"`
-	DMChannel string `json:"dmChannel"`
-}
-
 // initDetailParams 初始化DetailParam
 func initDetailParams(client *Client) CommonParams {
 	commonParam := initCommonParams()
@@ -83,15 +77,43 @@ func initDetailParams(client *Client) CommonParams {
 	return commonParam
 }
 
+// DetailParamsData 详情请求data结构体
+type DetailParamsData struct {
+	ItemId    string `json:"itemId"`
+	BizCode   string `json:"bizCode"`
+	Scenario  string `json:"scenario"`
+	DMChannel string `json:"dmChannel"`
+	ExParams  string `json:"exParams"`
+}
+
 // initDetailParamData 初始化DetailParamData
 func initDetailParamData(itemId string) string {
 	data := DetailParamsData{
 		ItemId:    itemId,
+		BizCode:   "ali.china.damai",
+		Scenario:  "itemsku",
 		DMChannel: "damai@damaih5_h5",
+		ExParams:  initExParams(4, ""),
 	}
 	stringData, _ := json.Marshal(data)
 
 	return string(stringData)
+}
+
+type ExParams struct {
+	DataType       int    `json:"dataType"`
+	DataId         string `json:"dataId"`
+	PrivilegeActId string `json:"privilegeActId"`
+}
+
+func initExParams(dataType int, dataId string) string {
+	data := ExParams{
+		DataType:       dataType,
+		DataId:         dataId,
+		PrivilegeActId: "",
+	}
+	b, _ := json.Marshal(data)
+	return string(b)
 }
 
 // genSign 生成hash值
@@ -116,4 +138,9 @@ func RequestTickDetail(c *Client) {
 		},
 	)
 	fmt.Println(resp, err)
+}
+
+// GetPerformInfo 获取场次信息
+func GetPerformInfo() {
+
 }
