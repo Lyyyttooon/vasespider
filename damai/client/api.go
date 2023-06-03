@@ -3,15 +3,12 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/Lyyyttooon/vasespider/utils"
-	"github.com/go-resty/resty/v2"
 )
-
-// client http客户端
-var client = resty.New()
 
 // UserAgent 浏览器UA
 const UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
@@ -73,8 +70,8 @@ type DetailParamsData struct {
 	DMChannel string `json:"dmChannel"`
 }
 
-// InitDetailParams 初始化DetailParam
-func InitDetailParams(client *Client) CommonParams {
+// initDetailParams 初始化DetailParam
+func initDetailParams(client *Client) CommonParams {
 	commonParam := initCommonParams()
 
 	data := initDetailParamData(client.ItemId)
@@ -104,13 +101,19 @@ func genSign(token string, now int64, appKey string, data string) string {
 
 // RequestTickDetail 请求票务详情
 func RequestTickDetail(c *Client) {
-	params := InitDetailParams(c)
+	params := initDetailParams(c)
 	str := utils.ParseQuery(params)
-	resp, _ := client.R().
-		SetHeader("origin", "https://m.damai.cn/").
-		SetHeader("referer", "https://m.damai.cn/").
-		SetHeader("cookie", c.Cookie).
-		SetHeader("User-Agent", UserAgent).
-		Get(detailApi + str)
-	fmt.Println(resp)
+	resp, err := utils.Request(
+		detailApi+str,
+		utils.RequestContext{
+			Method: http.MethodGet,
+			Headers: map[string]string{
+				"origin":     "https://m.damai.cn",
+				"referer":    "https://m.damai.cn/",
+				"cookie":     c.Cookie,
+				"User-Agent": UserAgent,
+			},
+		},
+	)
+	fmt.Println(resp, err)
 }
