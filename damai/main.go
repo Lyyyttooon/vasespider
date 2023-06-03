@@ -6,5 +6,6 @@ import (
 
 func main() {
 	c := client.InitClient()
-	c.TicketDetail()
+	// c.TicketDetail()
+	c.BuildOrder()
 }

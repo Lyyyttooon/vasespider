@@ -26,6 +26,9 @@ type Client struct {
 	ItemId     string
 	SessionNum int
 	TicketNum  int
+
+	itemId string
+	skuId  string
 }
 
 // InitClient 初始化客户端
@@ -42,7 +45,15 @@ func InitClient() Client {
 }
 
 func (c *Client) TicketDetail() {
-	RequestTickDetail(c)
+	GetTickDetail(c)
+}
+
+func (c *Client) PerformInfo() {
+	GetPerformInfo(c)
+}
+
+func (c *Client) BuildOrder() {
+	BuildOrder(c)
 }
 
 // parseCookie 解析cookie
