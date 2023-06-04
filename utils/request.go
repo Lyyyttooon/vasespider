@@ -1,14 +1,15 @@
 package utils
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 // Request 请求
 func Request(url string, RequestData RequestContext) (*ResponseData, error) {
-	req, err := http.NewRequest(RequestData.Method, url, strings.NewReader(RequestData.Body))
+	req, err := http.NewRequest(RequestData.Method, url, RequestData.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -23,13 +24,14 @@ func Request(url string, RequestData RequestContext) (*ResponseData, error) {
 type RequestContext struct {
 	Method  string
 	Headers map[string]string
-	Body    string
+	Body    io.Reader
 
 	req *http.Request
 }
 
 // setHeaders 设置请求头
 func (r *RequestContext) setHeaders() {
+	r.req.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	for i := range r.Headers {
 		r.req.Header.Add(i, r.Headers[i])
 	}
@@ -44,7 +46,7 @@ func (r *RequestContext) do() (*ResponseData, error) {
 	defer res.Body.Close()
 
 	response := &ResponseData{Res: res}
-	response.body, err = ioutil.ReadAll(res.Body)
+	response.body, err = io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -65,4 +67,14 @@ func (r *ResponseData) Body() []byte {
 
 func (r *ResponseData) String() string {
 	return strings.TrimSpace(string(r.body))
+}
+
+func NewForm(items ...map[string]string) io.Reader {
+	formValues := url.Values{}
+	for _, v := range items {
+		for _, sv := range v {
+			formValues.Set(sv, v[sv])
+		}
+	}
+	return strings.NewReader(formValues.Encode())
 }

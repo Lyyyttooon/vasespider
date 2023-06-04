@@ -37,7 +37,7 @@ func InitClient() Client {
 	client := Client{
 		Cookie:     viper.GetString("cookie"),
 		ItemId:     viper.GetString("itemId"),
-		SkuId:      "5016701340283",
+		SkuId:      "5016701340284",
 		SessionNum: viper.GetInt("sessionNum"),
 		TicketNum:  viper.GetInt("ticketNum"),
 	}

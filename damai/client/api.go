@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -203,9 +204,10 @@ func GetPerformInfo(c *Client) {
 }
 
 // 订单参数生成
-func initBuildOrderParams() CommonParams {
+func initBuildOrderParams(client *Client, data string) CommonParams {
 	params := initCommonParams()
 
+	params.Sign = genSign(client.Token, params.T, paramsAppKey, data)
 	params.V = paramsV4
 	params.Api = paramsApiOrder
 	params.Method = paramsMethodPost
@@ -240,10 +242,10 @@ func initOrderExParams() string {
 }
 
 type OrderData struct {
-	BugNow    string
-	ExParams  string
-	BuyParam  string
-	DmChannel string
+	BugNow    string `json:"buyNow"`
+	ExParams  string `json:"exParams"`
+	BuyParam  string `json:"buyParam"`
+	DmChannel string `json:"dmChannel"`
 }
 
 func initOrderParamData(itemId, skuId string, ticketNum int) string {
@@ -257,22 +259,38 @@ func initOrderParamData(itemId, skuId string, ticketNum int) string {
 	return string(b)
 }
 
+func initBuildOrderForm(data string) io.Reader {
+	arr := []map[string]string{
+		{
+			"data": data,
+		},
+		{
+			"bx-ua": "225!mlSGaozWooizCb4mJpbobI5X3efvlLfTHUpr0rM49CFX2plirMoJuQmgpsDTae6jhXmTycJrSIMxp8LZ5my+Q+Qtia1iEp1xopsooJiRDGh7f4j0QE0dDMXhfiN2TEVuqHfeSJ3jDGHzfeGgui0R4/Fq1EmZ0dSdjxf4oJiRDl/+f4GowzagD6L5wN7Fol4KjcI4bLijDlH+f4Ga640dDMXhfiElbUSV6JI4J43o4m/OBejRuo0KDM5huodlbHa55zYao5aTy+JsAbeIlUeY9rO8ONroh+wOx2I/J6M/VZvkMeCvpaQq9y1RmNZ9TveY2PmU4VWUe+NM6SeGmDc1yXXORkX5ZtpvYstgHVuLy+ORQxoRfpeOhX/xAGKbDzV1MLH95qbL9O2A8cx8OCbYgr1wuZL0dOQIBsma4SS/gKPp24oPu0QfyXHPjZvgT+brB5dnH6YyeFIIQx6fu0WdShXhfidlbUSKj6EhoJiRDlHzTe/OC1nE0GM5+Y6pSRdUbs/cQ7UhwM/HRYiUKSv3tMceEvhyolEEN/kfOrYdmKIIfBYv+oksfgUGYaSRrVg/a8vdy4wAowkGlrQNkNuKXHoa9ZE6XGOwsaD5H2Z6WVOCFr8yDMt2TLI1qdmohAAAA4xDXE3biDmZ6BDhqD9F4/j/I7v/A0WXiEXKsJvUSJZGJiFuhFQCXdCM3dvfe92FJ1MLLGivudKdcHvHtlQo+M0jVvpz600TctMsRVhj0ZUZw77wbo21aDxPQsTIbaAWAXoy6YkSG2pfznHKWoiXt4Pd+I/3HQ/CDOBSRhU111RvABVxmx7L1F8pMiQqPSCBYQwUsF/ioTQ1XFnejiegxHFHVfV2LI1+EqzwWWcjPvGjoMvtiQ2c0TJvR5Uwcp7JsTBYHxxKW/riQ4N3cj7mmspyXghOwnBo9hl6dxHDZXrQFrZDZwsL+fl4LzL2TXgzfKu+Id6fq7lZZvKGn1jEDhSP1+fanXJz1BoKBPKtHIX/l6yRKGEXE62QkiBC/eRm4JF1PDLN7WpTMseEFJzcWY1K84GHVvrdBDrrucgIo/7CEslNL0t84QhL7fxbnjL1HsoyGAteTNDd6l2nsVTCWHRN6X8gwAEs/d8z6FPf5NBx30vSHAHG6DXL5Qpq9F3l59QIPjkuAtCroO5nrDt+z7aX5NoTGZ0rfr9DQ4rW/0ishD1rC0+rGOVBDVk/z9PM1rfvIwnukl/vvrXZyCiK1p",
+		},
+		{
+			"bx-umidtoken": "G272F4AFA21AB063276E89CB9C59696451B61EBE5485C9B3DBC",
+		},
+	}
+	return utils.NewForm(arr...)
+}
+
 // 生成订单
 func BuildOrder(c *Client) {
-	params := initBuildOrderParams()
-	paramsStr := utils.ParseQuery(params)
 	data := initOrderParamData(c.ItemId, c.SkuId, c.TicketNum)
+	params := initBuildOrderParams(c, data)
+	paramsStr := utils.ParseQuery(params)
+	formData := initBuildOrderForm(data)
 	resp, err := utils.Request(
 		orderUrl+paramsStr,
 		utils.RequestContext{
-			Method: http.MethodGet,
+			Method: http.MethodPost,
 			Headers: map[string]string{
 				"origin":     "https://m.damai.cn",
 				"referer":    "https://m.damai.cn/",
 				"cookie":     c.Cookie,
 				"User-Agent": UserAgent,
 			},
-			Body: data,
+			Body: formData,
 		},
 	)
 	fmt.Println(resp, err)
@@ -400,18 +418,19 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 		"feature": string(featureB),
 	}
 	sumitOrderDataB, _ := json.Marshal(&submitOrderData)
+	fmt.Println(sumitOrderDataB)
 
 	resp, err := utils.Request(
 		submitUrl+submitOrderParamsStr,
 		utils.RequestContext{
-			Method: http.MethodGet,
+			Method: http.MethodPost,
 			Headers: map[string]string{
 				"origin":     "https://m.damai.cn",
 				"referer":    "https://m.damai.cn/",
 				"cookie":     c.Cookie,
 				"User-Agent": UserAgent,
 			},
-			Body: string(sumitOrderDataB),
+			// Body: string(sumitOrderDataB),
 		},
 	)
 	fmt.Println(resp, err)
