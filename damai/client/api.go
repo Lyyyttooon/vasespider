@@ -108,7 +108,7 @@ func initDetailParamData(itemId string, dataType int, performId string) string {
 		DMChannel: dmChannel,
 		ExParams:  initDetailExParams(dataType, performId),
 	}
-	stringData, _ := json.Marshal(data)
+	stringData, _ := json.Marshal(&data)
 
 	return string(stringData)
 }
@@ -125,7 +125,7 @@ func initDetailExParams(dataType int, dataId string) string {
 		DataId:         dataId,
 		PrivilegeActId: "",
 	}
-	b, _ := json.Marshal(data)
+	b, _ := json.Marshal(&data)
 	return string(b)
 }
 
@@ -235,7 +235,7 @@ func initOrderExParams() string {
 		ServiceVersion: "2.0.0",
 		CustomerType:   "default",
 	}
-	b, _ := json.Marshal(data)
+	b, _ := json.Marshal(&data)
 	return string(b)
 }
 
@@ -253,17 +253,15 @@ func initOrderParamData(itemId, skuId string, ticketNum int) string {
 		BuyParam:  fmt.Sprintf("%s_%d_%s", itemId, ticketNum, skuId),
 		DmChannel: dmChannel,
 	}
-	b, _ := json.Marshal(data)
+	b, _ := json.Marshal(&data)
 	return string(b)
 }
 
 // 生成订单
 func BuildOrder(c *Client) {
-	itemId, skuId := "720545258599", "5016701340283"
-
 	params := initBuildOrderParams()
 	paramsStr := utils.ParseQuery(params)
-	data := initOrderParamData(itemId, skuId, c.TicketNum)
+	data := initOrderParamData(c.ItemId, c.SkuId, c.TicketNum)
 	resp, err := utils.Request(
 		orderUrl+paramsStr,
 		utils.RequestContext{
@@ -326,10 +324,12 @@ func initSubmitParams(submitref string) CommonParams {
 	params.Post = "1"
 	params.Ttid = ttid
 	params.GlobalCode = aliDamai
+
+	return params
 }
 
 // SubmitOrder 提交订单
-func SubmitOrder(c *Client, orderInfo OrderInfo) {
+func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 	orderData := map[string]interface{}{}
 
 	for _, v := range orderInfo.Linkage.Input {
@@ -375,4 +375,44 @@ func SubmitOrder(c *Client, orderInfo OrderInfo) {
 	}
 
 	submitOrderParams := initSubmitParams(orderInfo.Global.SecretValue)
+	submitOrderParamsStr := utils.ParseQuery(submitOrderParams)
+
+	feature := map[string]string{
+		"subChannel":     "damai@damaih5_h5",
+		"returnUrl":      "https://m.damai.cn/damai/pay-success/index.html?spm=a2o71.orderconfirm.bottom.dconfirm&sqm=dianying.h5.unknown.value",
+		"serviceVersion": "2.0.0",
+		"dataTags":       "sqm:dianying.h5.unknown.value",
+	}
+
+	orderDataB, _ := json.Marshal(&orderData)
+	orderHierarchyB, _ := json.Marshal(&orderHierarchy)
+	orderLinkageB, _ := json.Marshal(&orderLinkage)
+	params := map[string]string{
+		"data":      string(orderDataB),
+		"hierarchy": string(orderHierarchyB),
+		"linkage":   string(orderLinkageB),
+	}
+
+	paramsB, _ := json.Marshal(&params)
+	featureB, _ := json.Marshal(&feature)
+	submitOrderData := map[string]string{
+		"params":  string(paramsB),
+		"feature": string(featureB),
+	}
+	sumitOrderDataB, _ := json.Marshal(&submitOrderData)
+
+	resp, err := utils.Request(
+		submitUrl+submitOrderParamsStr,
+		utils.RequestContext{
+			Method: http.MethodGet,
+			Headers: map[string]string{
+				"origin":     "https://m.damai.cn",
+				"referer":    "https://m.damai.cn/",
+				"cookie":     c.Cookie,
+				"User-Agent": UserAgent,
+			},
+			Body: string(sumitOrderDataB),
+		},
+	)
+	fmt.Println(resp, err)
 }

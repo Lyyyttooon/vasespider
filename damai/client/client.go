@@ -24,11 +24,11 @@ type Client struct {
 	TokenWithTime string
 
 	ItemId     string
+	SkuId      string
 	SessionNum int
 	TicketNum  int
 
-	itemId string
-	skuId  string
+	orderInfo *OrderInfo
 }
 
 // InitClient 初始化客户端
@@ -37,6 +37,7 @@ func InitClient() Client {
 	client := Client{
 		Cookie:     viper.GetString("cookie"),
 		ItemId:     viper.GetString("itemId"),
+		SkuId:      "5016701340283",
 		SessionNum: viper.GetInt("sessionNum"),
 		TicketNum:  viper.GetInt("ticketNum"),
 	}
@@ -54,6 +55,10 @@ func (c *Client) PerformInfo() {
 
 func (c *Client) BuildOrder() {
 	BuildOrder(c)
+}
+
+func (c *Client) SubmitOrder() {
+	SubmitOrder(c, c.orderInfo)
 }
 
 // parseCookie 解析cookie
