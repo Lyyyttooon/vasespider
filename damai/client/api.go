@@ -259,10 +259,16 @@ func initOrderParamData(itemId, skuId string, ticketNum int) string {
 	return string(b)
 }
 
-func initBuildOrderForm(data string) io.Reader {
+func initBuildOrderForm(c *Client, data string) io.Reader {
 	arr := []map[string]string{
 		{
 			"data": data,
+		},
+		{
+			"bx-ua": c.BxUa,
+		},
+		{
+			"bx-umidtoken": c.BxUmidtoken,
 		},
 	}
 	return utils.NewForm(arr...)
@@ -273,7 +279,7 @@ func BuildOrder(c *Client) {
 	data := initOrderParamData(c.ItemId, c.SkuId, c.TicketNum)
 	params := initBuildOrderParams(c, data)
 	paramsStr := utils.ParseQuery(params)
-	formData := initBuildOrderForm(data)
+	formData := initBuildOrderForm(c, data)
 	resp, err := utils.Request(
 		orderUrl+paramsStr,
 		utils.RequestContext{

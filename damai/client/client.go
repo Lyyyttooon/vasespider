@@ -28,18 +28,22 @@ type Client struct {
 	SessionNum int
 	TicketNum  int
 
-	orderInfo *OrderInfo
+	BxUa        string
+	BxUmidtoken string
+	orderInfo   *OrderInfo
 }
 
 // InitClient 初始化客户端
 func InitClient() Client {
 	readConfig()
 	client := Client{
-		Cookie:     viper.GetString("cookie"),
-		ItemId:     viper.GetString("itemId"),
-		SkuId:      "5016701340284",
-		SessionNum: viper.GetInt("sessionNum"),
-		TicketNum:  viper.GetInt("ticketNum"),
+		Cookie:      viper.GetString("cookie"),
+		ItemId:      viper.GetString("itemId"),
+		SkuId:       "5016701340284",
+		SessionNum:  viper.GetInt("sessionNum"),
+		TicketNum:   viper.GetInt("ticketNum"),
+		BxUa:        viper.GetString("bxUa"),
+		BxUmidtoken: viper.GetString("bxUmidtoken"),
 	}
 	client.Token, client.TokenWithTime = parseCookie(client.Cookie)
 	return client
