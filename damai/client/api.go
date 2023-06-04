@@ -44,7 +44,7 @@ const (
 	paramsTrue = "true"
 
 	dmChannel = "damai@damaih5_h5"
-	ttid      = "t#ip##_h5_2014"
+	ttid      = "#t#ip##_h5_2014"
 	aliDamai  = "ali.china.damai"
 )
 
@@ -211,7 +211,7 @@ func initBuildOrderParams(client *Client, data string) CommonParams {
 	params.V = paramsV4
 	params.Api = paramsApiOrder
 	params.Method = paramsMethodPost
-	params.Ttid = ttid
+	params.Ttid = url.QueryEscape(ttid)
 	params.GlobalCode = aliDamai
 
 	return params
@@ -220,7 +220,7 @@ func initBuildOrderParams(client *Client, data string) CommonParams {
 type OrderExParams struct {
 	Channel        string `json:"channel"`
 	Damai          string `json:"damai"`
-	UmpChannel     string `json:"UmpChannel"`
+	UmpChannel     string `json:"umpChannel"`
 	SubChannel     string `json:"subChannel"`
 	AtomSplit      string `json:"atomSplit"`
 	ServiceVersion string `json:"serviceVersion"`
@@ -263,12 +263,6 @@ func initBuildOrderForm(data string) io.Reader {
 	arr := []map[string]string{
 		{
 			"data": data,
-		},
-		{
-			"bx-ua": "225!mlSGaozWooizCb4mJpbobI5X3efvlLfTHUpr0rM49CFX2plirMoJuQmgpsDTae6jhXmTycJrSIMxp8LZ5my+Q+Qtia1iEp1xopsooJiRDGh7f4j0QE0dDMXhfiN2TEVuqHfeSJ3jDGHzfeGgui0R4/Fq1EmZ0dSdjxf4oJiRDl/+f4GowzagD6L5wN7Fol4KjcI4bLijDlH+f4Ga640dDMXhfiElbUSV6JI4J43o4m/OBejRuo0KDM5huodlbHa55zYao5aTy+JsAbeIlUeY9rO8ONroh+wOx2I/J6M/VZvkMeCvpaQq9y1RmNZ9TveY2PmU4VWUe+NM6SeGmDc1yXXORkX5ZtpvYstgHVuLy+ORQxoRfpeOhX/xAGKbDzV1MLH95qbL9O2A8cx8OCbYgr1wuZL0dOQIBsma4SS/gKPp24oPu0QfyXHPjZvgT+brB5dnH6YyeFIIQx6fu0WdShXhfidlbUSKj6EhoJiRDlHzTe/OC1nE0GM5+Y6pSRdUbs/cQ7UhwM/HRYiUKSv3tMceEvhyolEEN/kfOrYdmKIIfBYv+oksfgUGYaSRrVg/a8vdy4wAowkGlrQNkNuKXHoa9ZE6XGOwsaD5H2Z6WVOCFr8yDMt2TLI1qdmohAAAA4xDXE3biDmZ6BDhqD9F4/j/I7v/A0WXiEXKsJvUSJZGJiFuhFQCXdCM3dvfe92FJ1MLLGivudKdcHvHtlQo+M0jVvpz600TctMsRVhj0ZUZw77wbo21aDxPQsTIbaAWAXoy6YkSG2pfznHKWoiXt4Pd+I/3HQ/CDOBSRhU111RvABVxmx7L1F8pMiQqPSCBYQwUsF/ioTQ1XFnejiegxHFHVfV2LI1+EqzwWWcjPvGjoMvtiQ2c0TJvR5Uwcp7JsTBYHxxKW/riQ4N3cj7mmspyXghOwnBo9hl6dxHDZXrQFrZDZwsL+fl4LzL2TXgzfKu+Id6fq7lZZvKGn1jEDhSP1+fanXJz1BoKBPKtHIX/l6yRKGEXE62QkiBC/eRm4JF1PDLN7WpTMseEFJzcWY1K84GHVvrdBDrrucgIo/7CEslNL0t84QhL7fxbnjL1HsoyGAteTNDd6l2nsVTCWHRN6X8gwAEs/d8z6FPf5NBx30vSHAHG6DXL5Qpq9F3l59QIPjkuAtCroO5nrDt+z7aX5NoTGZ0rfr9DQ4rW/0ishD1rC0+rGOVBDVk/z9PM1rfvIwnukl/vvrXZyCiK1p",
-		},
-		{
-			"bx-umidtoken": "G272F4AFA21AB063276E89CB9C59696451B61EBE5485C9B3DBC",
 		},
 	}
 	return utils.NewForm(arr...)

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,6 +17,7 @@ func Request(url string, RequestData RequestContext) (*ResponseData, error) {
 
 	RequestData.req = req
 	RequestData.setHeaders()
+	fmt.Println(RequestData.req.URL.String())
 
 	return RequestData.do()
 }
@@ -72,9 +74,10 @@ func (r *ResponseData) String() string {
 func NewForm(items ...map[string]string) io.Reader {
 	formValues := url.Values{}
 	for _, v := range items {
-		for _, sv := range v {
-			formValues.Set(sv, v[sv])
+		for sk, sv := range v {
+			formValues.Set(sk, sv)
 		}
 	}
+	fmt.Println(formValues.Encode())
 	return strings.NewReader(formValues.Encode())
 }
