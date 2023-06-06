@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"bytes"
 	"io"
 	"net/http"
 	"net/url"
@@ -10,14 +10,13 @@ import (
 
 // Request 请求
 func Request(url string, RequestData RequestContext) (*ResponseData, error) {
-	req, err := http.NewRequest(RequestData.Method, url, RequestData.Body)
+	req, err := http.NewRequest(RequestData.Method, url, bytes.NewReader(RequestData.Body))
 	if err != nil {
 		return nil, err
 	}
 
 	RequestData.req = req
 	RequestData.setHeaders()
-	fmt.Println(RequestData.req.URL.String())
 
 	return RequestData.do()
 }
@@ -26,7 +25,7 @@ func Request(url string, RequestData RequestContext) (*ResponseData, error) {
 type RequestContext struct {
 	Method  string
 	Headers map[string]string
-	Body    io.Reader
+	Body    []byte
 
 	req *http.Request
 }
@@ -71,13 +70,12 @@ func (r *ResponseData) String() string {
 	return strings.TrimSpace(string(r.body))
 }
 
-func NewForm(items ...map[string]string) io.Reader {
+func NewForm(items ...map[string]string) []byte {
 	formValues := url.Values{}
 	for _, v := range items {
 		for sk, sv := range v {
 			formValues.Set(sk, sv)
 		}
 	}
-	fmt.Println(formValues.Encode())
-	return strings.NewReader(formValues.Encode())
+	return []byte(formValues.Encode())
 }

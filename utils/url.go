@@ -20,7 +20,6 @@ func ParseQuery(data interface{}) string {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			str += fmt.Sprintf("%s=%s", t.Field(i).Tag.Get("url"), intEncoder(v.Field(i)))
 		}
-
 		if i != t.NumField()-1 {
 			str += "&"
 		}

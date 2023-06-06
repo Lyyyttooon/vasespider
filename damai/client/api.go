@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -64,8 +63,8 @@ type CommonParams struct {
 	Method                string `json:"method" url:"method"`
 	Submitref             string `json:"submitref" url:"submitref"`
 	Timeout               string `json:"timeout" url:"timeout"`
-	IsSec                 string `json:"isSec" url:"ttid"`
-	Ecode                 string `json:"ecode" url:"ttid"`
+	IsSec                 string `json:"isSec" url:"isSec"`
+	Ecode                 string `json:"ecode" url:"ecode"`
 	Post                  string `json:"post" url:"post"`
 	Ttid                  string `json:"ttid" url:"ttid"`
 	GlobalCode            string `json:"globalCode" url:"globalCode"`
@@ -259,13 +258,13 @@ func initOrderParamData(itemId, skuId string, ticketNum int) string {
 	return string(b)
 }
 
-func initBuildOrderForm(c *Client, data string) io.Reader {
+func initBuildOrderForm(c *Client, data, bxUa string) []byte {
 	arr := []map[string]string{
 		{
 			"data": data,
 		},
 		{
-			"bx-ua": c.BxUa,
+			"bx-ua": bxUa,
 		},
 		{
 			"bx-umidtoken": c.BxUmidtoken,
@@ -275,11 +274,11 @@ func initBuildOrderForm(c *Client, data string) io.Reader {
 }
 
 // 生成订单
-func BuildOrder(c *Client) {
+func BuildOrder(c *Client) (*utils.ResponseData, error) {
 	data := initOrderParamData(c.ItemId, c.SkuId, c.TicketNum)
 	params := initBuildOrderParams(c, data)
 	paramsStr := utils.ParseQuery(params)
-	formData := initBuildOrderForm(c, data)
+	formData := initBuildOrderForm(c, data, c.BxUa)
 	resp, err := utils.Request(
 		orderUrl+paramsStr,
 		utils.RequestContext{
@@ -293,7 +292,11 @@ func BuildOrder(c *Client) {
 			Body: formData,
 		},
 	)
-	fmt.Println(resp, err)
+	return resp, err
+}
+
+type RespOrderInfo struct {
+	Data OrderInfo `json:"data"`
 }
 
 type OrderInfo struct {
@@ -330,9 +333,15 @@ type OrderInfoLinkageCommon struct {
 	SubmitParams   string `json:"submit_params"`
 }
 
-func initSubmitParams(submitref string) CommonParams {
+type SubmitData struct {
+	Params  string `json:"params"`
+	Feature string `json:"feature"`
+}
+
+func initSubmitParams(client *Client, data string, submitref string) CommonParams {
 	params := initCommonParams()
 
+	params.Sign = genSign(client.Token, params.T, paramsAppKey, data)
 	params.Api = paramsApiSubmit
 	params.V = paramsV4
 	params.Submitref = submitref
@@ -340,7 +349,7 @@ func initSubmitParams(submitref string) CommonParams {
 	params.IsSec = "1"
 	params.Ecode = "1"
 	params.Post = "1"
-	params.Ttid = ttid
+	params.Ttid = url.QueryEscape(ttid)
 	params.GlobalCode = aliDamai
 
 	return params
@@ -392,9 +401,6 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 		"signature": orderInfo.Linkage.Signature,
 	}
 
-	submitOrderParams := initSubmitParams(orderInfo.Global.SecretValue)
-	submitOrderParamsStr := utils.ParseQuery(submitOrderParams)
-
 	feature := map[string]string{
 		"subChannel":     "damai@damaih5_h5",
 		"returnUrl":      "https://m.damai.cn/damai/pay-success/index.html?spm=a2o71.orderconfirm.bottom.dconfirm&sqm=dianying.h5.unknown.value",
@@ -413,12 +419,18 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 
 	paramsB, _ := json.Marshal(&params)
 	featureB, _ := json.Marshal(&feature)
-	submitOrderData := map[string]string{
-		"params":  string(paramsB),
-		"feature": string(featureB),
+	submitOrderData := SubmitData{
+		Params:  string(paramsB),
+		Feature: string(featureB),
 	}
-	sumitOrderDataB, _ := json.Marshal(&submitOrderData)
-	fmt.Println(sumitOrderDataB)
+	submitOrderDataB, _ := json.Marshal(submitOrderData)
+	submitOrderDataStr := string(submitOrderDataB)
+
+	submitOrderParams := initSubmitParams(c, submitOrderDataStr, orderInfo.Global.SecretValue)
+	submitOrderParamsStr := utils.ParseQuery(submitOrderParams)
+
+	sumitOrderDataB := initBuildOrderForm(c, submitOrderDataStr, c.BXUa2)
+	fmt.Println(string(sumitOrderDataB))
 
 	resp, err := utils.Request(
 		submitUrl+submitOrderParamsStr,
@@ -430,7 +442,7 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 				"cookie":     c.Cookie,
 				"User-Agent": UserAgent,
 			},
-			// Body: string(sumitOrderDataB),
+			Body: sumitOrderDataB,
 		},
 	)
 	fmt.Println(resp, err)

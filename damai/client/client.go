@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -29,6 +30,7 @@ type Client struct {
 	TicketNum  int
 
 	BxUa        string
+	BXUa2       string
 	BxUmidtoken string
 	orderInfo   *OrderInfo
 }
@@ -43,7 +45,9 @@ func InitClient() Client {
 		SessionNum:  viper.GetInt("sessionNum"),
 		TicketNum:   viper.GetInt("ticketNum"),
 		BxUa:        viper.GetString("bxUa"),
+		BXUa2:       viper.GetString("bxUa2"),
 		BxUmidtoken: viper.GetString("bxUmidtoken"),
+		orderInfo:   &OrderInfo{},
 	}
 	client.Token, client.TokenWithTime = parseCookie(client.Cookie)
 	return client
@@ -57,8 +61,21 @@ func (c *Client) PerformInfo() {
 	GetPerformInfo(c)
 }
 
-func (c *Client) BuildOrder() {
-	BuildOrder(c)
+func (c *Client) BuildOrder() error {
+	resp, err := BuildOrder(c)
+	if err != nil {
+		return err
+	}
+
+	data := &RespOrderInfo{}
+	err = json.Unmarshal(resp.Body(), data)
+	if err != nil {
+		return err
+	}
+
+	c.orderInfo = &data.Data
+
+	return nil
 }
 
 func (c *Client) SubmitOrder() {

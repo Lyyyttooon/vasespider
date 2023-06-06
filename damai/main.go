@@ -8,4 +8,5 @@ func main() {
 	c := client.InitClient()
 	// c.TicketDetail()
 	c.BuildOrder()
+	c.SubmitOrder()
 }
