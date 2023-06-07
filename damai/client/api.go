@@ -313,7 +313,7 @@ type SubmitDataParams struct {
 	Linkage   string `json:"linkage"`
 }
 
-func initSubmitParams(client *Client, data string, submitref string) CommonParams {
+func initSubmitParams(submitref string) CommonParams {
 	params := initCommonParams()
 
 	params.Api = paramsApiSubmit
@@ -400,7 +400,7 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 	submitOrderDataB, _ := json.Marshal(submitOrderData)
 	submitOrderDataStr := string(submitOrderDataB)
 
-	submitOrderParams := initSubmitParams(c, submitOrderDataStr, orderInfo.Global.SecretValue)
+	submitOrderParams := initSubmitParams(orderInfo.Global.SecretValue)
 
 	resp, err := request(submitUrl, submitOrderParams, submitOrderDataStr, c)
 	fmt.Println(resp, err)
