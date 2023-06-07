@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
@@ -78,4 +79,9 @@ func NewForm(items ...map[string]string) []byte {
 		}
 	}
 	return []byte(formValues.Encode())
+}
+
+func Json(data interface{}) string {
+	dataB, _ := json.Marshal(data)
+	return string(dataB)
 }

@@ -253,8 +253,7 @@ func initOrderParamData(itemId, skuId string, ticketNum int) string {
 		BuyParam:  fmt.Sprintf("%s_%d_%s", itemId, ticketNum, skuId),
 		DmChannel: dmChannel,
 	}
-	b, _ := json.Marshal(&data)
-	return string(b)
+	return utils.Json(&data)
 }
 
 // 生成订单
@@ -266,6 +265,7 @@ func BuildOrder(c *Client) (*utils.ResponseData, error) {
 
 type RespOrderInfo struct {
 	Data OrderInfo `json:"data"`
+	Ret  []string  `json:"ret"`
 }
 
 type OrderInfo struct {
@@ -283,7 +283,7 @@ type OrderInfoGlobal struct {
 type OrderInfoHierarchy struct {
 	Component []string            `json:"component"`
 	Root      string              `json:"root"`
-	BaseType  []string            `json:"base_type"`
+	BaseType  []string            `json:"baseType"`
 	Structure map[string][]string `json:"structure"`
 }
 
@@ -297,9 +297,9 @@ type OrderInfoLinkage struct {
 type OrderInfoLinkageCommon struct {
 	QueryParams    string `json:"queryParams"`
 	Compress       bool   `json:"compress"`
-	ValidateParams string `json:"validate_params"`
+	ValidateParams string `json:"validateParams"`
 	Structures     string `json:"structures"`
-	SubmitParams   string `json:"submit_params"`
+	SubmitParams   string `json:"submitParams"`
 }
 
 type SubmitData struct {
@@ -311,6 +311,13 @@ type SubmitDataParams struct {
 	Data      string `json:"data"`
 	Hierarchy string `json:"hierarchy"`
 	Linkage   string `json:"linkage"`
+}
+
+type Feature struct {
+	SubChannel     string `json:"subChannel"`
+	ReturnUrl      string `json:"returnUrl"`
+	ServiceVersion string `json:"serviceVersion"`
+	DataTags       string `json:"dataTags"`
 }
 
 func initSubmitParams(submitref string) CommonParams {
@@ -375,33 +382,26 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 		"signature": orderInfo.Linkage.Signature,
 	}
 
-	feature := map[string]string{
-		"subChannel":     "damai@damaih5_h5",
-		"returnUrl":      "https://m.damai.cn/damai/pay-success/index.html?spm=a2o71.orderconfirm.bottom.dconfirm&sqm=dianying.h5.unknown.value",
-		"serviceVersion": "2.0.0",
-		"dataTags":       "sqm:dianying.h5.unknown.value",
+	feature := Feature{
+		SubChannel:     "damai@damaih5_h5",
+		ReturnUrl:      "https://m.damai.cn/damai/pay-success/index.html?spm=a2o71.orderconfirm.bottom.dconfirm&sqm=dianying.h5.unknown.value",
+		ServiceVersion: "2.0.0",
+		DataTags:       "sqm:dianying.h5.unknown.value",
 	}
 
-	orderDataB, _ := json.Marshal(&orderData)
-	orderHierarchyB, _ := json.Marshal(&orderHierarchy)
-	orderLinkageB, _ := json.Marshal(&orderLinkage)
 	params := SubmitDataParams{
-		Data:      string(orderDataB),
-		Hierarchy: string(orderHierarchyB),
-		Linkage:   string(orderLinkageB),
+		Data:      utils.Json(&orderData),
+		Hierarchy: utils.Json(&orderHierarchy),
+		Linkage:   utils.Json(&orderLinkage),
 	}
 
-	paramsB, _ := json.Marshal(&params)
-	featureB, _ := json.Marshal(&feature)
 	submitOrderData := SubmitData{
-		Params:  string(paramsB),
-		Feature: string(featureB),
+		Params:  utils.Json(&params),
+		Feature: utils.Json(&feature),
 	}
-	submitOrderDataB, _ := json.Marshal(submitOrderData)
-	submitOrderDataStr := string(submitOrderDataB)
 
 	submitOrderParams := initSubmitParams(orderInfo.Global.SecretValue)
 
-	resp, err := request(submitUrl, submitOrderParams, submitOrderDataStr, c)
+	resp, err := request(submitUrl, submitOrderParams, utils.Json(&submitOrderData), c)
 	fmt.Println(resp, err)
 }

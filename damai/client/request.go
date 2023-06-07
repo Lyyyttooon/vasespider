@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/Lyyyttooon/vasespider/utils"
@@ -22,12 +21,13 @@ func buildFormData(c *Client, data, bxUa string) []byte {
 	return utils.NewForm(arr...)
 }
 
-func request(url string, params CommonParams, body interface{}, c *Client) (*utils.ResponseData, error) {
-	bodyB, _ := json.Marshal(body)
-	bodyStr := string(bodyB)
-	params.Sign = genSign(c.Token, params.T, paramsAppKey, bodyStr)
+func request(url string, params CommonParams, body string, c *Client) (*utils.ResponseData, error) {
+	params.Sign = genSign(c.Token, params.T, paramsAppKey, body)
 	paramsStr := utils.ParseQuery(params)
-	form := buildFormData(c, bodyStr, c.BxUa)
+	form := buildFormData(c, body, c.BxUa[0])
+	if len(c.BxUa) > 1 {
+		c.BxUa = c.BxUa[1:]
+	}
 
 	resp, err := utils.Request(
 		url+paramsStr,

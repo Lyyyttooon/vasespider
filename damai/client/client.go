@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -29,8 +30,7 @@ type Client struct {
 	SessionNum int
 	TicketNum  int
 
-	BxUa        string
-	BXUa2       string
+	BxUa        []string
 	BxUmidtoken string
 	orderInfo   *OrderInfo
 }
@@ -44,8 +44,7 @@ func InitClient() Client {
 		SkuId:       "5016701340284",
 		SessionNum:  viper.GetInt("sessionNum"),
 		TicketNum:   viper.GetInt("ticketNum"),
-		BxUa:        viper.GetString("bxUa"),
-		BXUa2:       viper.GetString("bxUa2"),
+		BxUa:        viper.GetStringSlice("bxUa"),
 		BxUmidtoken: viper.GetString("bxUmidtoken"),
 		orderInfo:   &OrderInfo{},
 	}
@@ -66,11 +65,15 @@ func (c *Client) BuildOrder() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(resp)
 
 	data := &RespOrderInfo{}
 	err = json.Unmarshal(resp.Body(), data)
 	if err != nil {
 		return err
+	}
+	if len(data.Ret) > 0 && strings.HasPrefix(data.Ret[0], "FAIL") {
+		return errors.New("请求错误")
 	}
 
 	c.orderInfo = &data.Data
