@@ -1,7 +1,9 @@
 package client
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/Lyyyttooon/vasespider/utils"
 )
@@ -18,7 +20,16 @@ func buildFormData(c *Client, data, bxUa string) []byte {
 			"bx-umidtoken": c.BxUmidtoken,
 		},
 	}
-	return utils.NewForm(arr...)
+
+	str := ""
+	for _, v := range arr {
+		for sk, sv := range v {
+			str += fmt.Sprintf("%s=%s&", sk, url.QueryEscape(sv))
+		}
+	}
+	str = str[:len(str)-1]
+
+	return []byte(str)
 }
 
 func request(url string, params CommonParams, body string, c *Client) (*utils.ResponseData, error) {
@@ -28,6 +39,7 @@ func request(url string, params CommonParams, body string, c *Client) (*utils.Re
 	if len(c.BxUa) > 1 {
 		c.BxUa = c.BxUa[1:]
 	}
+	fmt.Println(string(form))
 
 	resp, err := utils.Request(
 		url+paramsStr,
