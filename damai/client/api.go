@@ -203,10 +203,9 @@ func GetPerformInfo(c *Client) {
 }
 
 // 订单参数生成
-func initBuildOrderParams(client *Client, data string) CommonParams {
+func initBuildOrderParams() CommonParams {
 	params := initCommonParams()
 
-	params.Sign = genSign(client.Token, params.T, paramsAppKey, data)
 	params.V = paramsV4
 	params.Api = paramsApiOrder
 	params.Method = paramsMethodPost
@@ -258,41 +257,11 @@ func initOrderParamData(itemId, skuId string, ticketNum int) string {
 	return string(b)
 }
 
-func initBuildOrderForm(c *Client, data, bxUa string) []byte {
-	arr := []map[string]string{
-		{
-			"data": data,
-		},
-		{
-			"bx-ua": bxUa,
-		},
-		{
-			"bx-umidtoken": c.BxUmidtoken,
-		},
-	}
-	return utils.NewForm(arr...)
-}
-
 // 生成订单
 func BuildOrder(c *Client) (*utils.ResponseData, error) {
 	data := initOrderParamData(c.ItemId, c.SkuId, c.TicketNum)
-	params := initBuildOrderParams(c, data)
-	paramsStr := utils.ParseQuery(params)
-	formData := initBuildOrderForm(c, data, c.BxUa)
-	resp, err := utils.Request(
-		orderUrl+paramsStr,
-		utils.RequestContext{
-			Method: http.MethodPost,
-			Headers: map[string]string{
-				"origin":     "https://m.damai.cn",
-				"referer":    "https://m.damai.cn/",
-				"cookie":     c.Cookie,
-				"User-Agent": UserAgent,
-			},
-			Body: formData,
-		},
-	)
-	return resp, err
+	params := initBuildOrderParams()
+	return request(orderUrl, params, data, c)
 }
 
 type RespOrderInfo struct {
@@ -338,10 +307,15 @@ type SubmitData struct {
 	Feature string `json:"feature"`
 }
 
+type SubmitDataParams struct {
+	Data      string `json:"data"`
+	Hierarchy string `json:"hierarchy"`
+	Linkage   string `json:"linkage"`
+}
+
 func initSubmitParams(client *Client, data string, submitref string) CommonParams {
 	params := initCommonParams()
 
-	params.Sign = genSign(client.Token, params.T, paramsAppKey, data)
 	params.Api = paramsApiSubmit
 	params.V = paramsV4
 	params.Submitref = submitref
@@ -411,10 +385,10 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 	orderDataB, _ := json.Marshal(&orderData)
 	orderHierarchyB, _ := json.Marshal(&orderHierarchy)
 	orderLinkageB, _ := json.Marshal(&orderLinkage)
-	params := map[string]string{
-		"data":      string(orderDataB),
-		"hierarchy": string(orderHierarchyB),
-		"linkage":   string(orderLinkageB),
+	params := SubmitDataParams{
+		Data:      string(orderDataB),
+		Hierarchy: string(orderHierarchyB),
+		Linkage:   string(orderLinkageB),
 	}
 
 	paramsB, _ := json.Marshal(&params)
@@ -427,23 +401,7 @@ func SubmitOrder(c *Client, orderInfo *OrderInfo) {
 	submitOrderDataStr := string(submitOrderDataB)
 
 	submitOrderParams := initSubmitParams(c, submitOrderDataStr, orderInfo.Global.SecretValue)
-	submitOrderParamsStr := utils.ParseQuery(submitOrderParams)
 
-	sumitOrderDataB := initBuildOrderForm(c, submitOrderDataStr, c.BXUa2)
-	fmt.Println(string(sumitOrderDataB))
-
-	resp, err := utils.Request(
-		submitUrl+submitOrderParamsStr,
-		utils.RequestContext{
-			Method: http.MethodPost,
-			Headers: map[string]string{
-				"origin":     "https://m.damai.cn",
-				"referer":    "https://m.damai.cn/",
-				"cookie":     c.Cookie,
-				"User-Agent": UserAgent,
-			},
-			Body: sumitOrderDataB,
-		},
-	)
+	resp, err := request(submitUrl, submitOrderParams, submitOrderDataStr, c)
 	fmt.Println(resp, err)
 }
