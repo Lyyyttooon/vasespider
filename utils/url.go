@@ -16,14 +16,12 @@ func ParseQuery(data interface{}) string {
 			if v.Field(i).String() == "" {
 				continue
 			}
-			str += fmt.Sprintf("%s=%s", t.Field(i).Tag.Get("url"), v.Field(i).String())
+			str += fmt.Sprintf("%s=%s&", t.Field(i).Tag.Get("url"), v.Field(i).String())
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			str += fmt.Sprintf("%s=%s", t.Field(i).Tag.Get("url"), intEncoder(v.Field(i)))
-		}
-		if i != t.NumField()-1 {
-			str += "&"
+			str += fmt.Sprintf("%s=%s&", t.Field(i).Tag.Get("url"), intEncoder(v.Field(i)))
 		}
 	}
+	str = str[:len(str)-1]
 	return str
 }
 
