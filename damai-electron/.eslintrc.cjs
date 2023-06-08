@@ -19,6 +19,8 @@ module.exports = {
     ecmaVersion: 'latest'
   },
   globals: {
-    damaiRequest: 'readonly'
+    require: 'readonly',
+    process: 'readonly',
+    __dirname: 'readonly'
   }
 }

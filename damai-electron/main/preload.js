@@ -1,7 +1,7 @@
-/* eslint-disable no-undef */
 // All the Node.js APIs are available in the preload process.
-
 const { contextBridge } = require('electron')
+
+const { getTicketsIfo } = require('./dm')
 
 // It has the same sandbox as a Chrome extension.
 window.addEventListener('DOMContentLoaded', () => {
@@ -18,7 +18,3 @@ window.addEventListener('DOMContentLoaded', () => {
 contextBridge.exposeInMainWorld('damaiRequest', {
   getTicketsIfo: getTicketsIfo
 })
-
-function getTicketsIfo() {
-  console.log('get tickets info')
-}

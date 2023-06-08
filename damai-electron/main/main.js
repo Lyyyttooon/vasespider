@@ -1,4 +1,5 @@
-/* eslint-disable no-undef */
+process.env['NODE_CONFIG_DIR'] = './'
+
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
 const url = require('url')
