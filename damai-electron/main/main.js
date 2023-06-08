@@ -1,8 +1,8 @@
-process.env['NODE_CONFIG_DIR'] = './'
-
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
+
+const { getTicketsInfo } = require('./dm')
 
 // 判断命令行脚本的第二参数
 const mode = process.argv[2]
@@ -65,6 +65,9 @@ if (!gotTheLock) {
   // app主进程的事件和方法
   // 只有在ready事件被激发后才能创建浏览器窗口
   app.whenReady().then(() => {
+    // ipc事件
+    ipcMain.on('getTicketsInfo', getTicketsInfo)
+
     createWindow()
 
     // 针对macos系统，在没有浏览器窗口打开的情况下调用你仅存的 createWindow() 方法

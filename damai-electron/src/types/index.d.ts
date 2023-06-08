@@ -1,5 +1,5 @@
 declare class damaiRequest {
-  static getTicketsIfo(): any {
+  static getTicketsInfo(): any {
     throw new Error('Method not implemented.')
   }
 }

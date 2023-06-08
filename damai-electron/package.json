@@ -35,7 +35,7 @@
     "dist": "npm run build && electron-builder"
   },
   "dependencies": {
-    "config": "^3.3.9"
+    "axios": "^1.4.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",

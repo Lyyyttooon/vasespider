@@ -21,6 +21,7 @@ module.exports = {
   globals: {
     require: 'readonly',
     process: 'readonly',
-    __dirname: 'readonly'
+    __dirname: 'readonly',
+    module: 'readonly'
   }
 }

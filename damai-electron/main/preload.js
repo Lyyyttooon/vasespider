@@ -1,7 +1,5 @@
 // All the Node.js APIs are available in the preload process.
-const { contextBridge } = require('electron')
-
-const { getTicketsIfo } = require('./dm')
+const { contextBridge, ipcRenderer } = require('electron')
 
 // It has the same sandbox as a Chrome extension.
 window.addEventListener('DOMContentLoaded', () => {
@@ -16,5 +14,5 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 contextBridge.exposeInMainWorld('damaiRequest', {
-  getTicketsIfo: getTicketsIfo
+  getTicketsInfo: () => ipcRenderer.send('getTicketsInfo')
 })
