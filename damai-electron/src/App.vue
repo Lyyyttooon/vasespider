@@ -1,31 +1,51 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import { ElButton } from 'element-plus'
+import { ElButton, ElForm, ElFormItem } from 'element-plus'
+
+const form = reactive({
+  itemId: '',
+  cookie: '',
+  ticketsNum: 1,
+  sessionNum: 1
+})
 
 onMounted(() => {
   damaiRequest.getTicketsInfo()
-})
 
+  if (window.baxiaCommon) {
+    try {
+      window.baxiaCommon.init({
+        checkApiPath: function (i: string | string[]) {
+          return (
+            -1 < i.indexOf('mtop.trade.order.build.h5') ||
+            -1 < i.indexOf('mtop.trade.order.create.h5')
+          )
+        }
+      })
+    } catch (e) {
+      console.error('初始化 baxia 失败', e)
+    }
+  }
+})
 </script>
 
 <template>
-  <header>
+  <ElForm :model="form" label-width="120px">
+    <ElFormItem label="itemId" label-width="120px">
+      <el-input v-model="form.itemId" />
+    </ElFormItem>
+    <ElFormItem label="cookie" label-width="120px">
+      <el-input v-model="form.cookie" />
+    </ElFormItem>
+    <ElFormItem label="票数" label-width="120px">
+      <el-input v-model="form.ticketsNum" />
+    </ElFormItem>
+    <ElFormItem label="票次" label-width="120px">
+      <el-input v-model="form.ticketsNum" />
+    </ElFormItem>
     <ElButton>按钮</ElButton>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  </ElForm>
 </template>
 
 <style scoped>

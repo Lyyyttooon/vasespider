@@ -3,3 +3,7 @@ declare class damaiRequest {
     throw new Error('Method not implemented.')
   }
 }
+
+interface Window {
+  baxiaCommon: any
+}
