@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
-import { ElButton, ElForm, ElFormItem, ElInput, ElInputNumber } from 'element-plus'
+import {
+  ElButton,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElInputNumber,
+  ElRadio,
+  ElRadioGroup
+} from 'element-plus'
 import { getBxua, getUmid } from '@/utils/baxia'
 
 interface formStruct {
@@ -15,7 +23,8 @@ const form: formStruct = reactive({
   itemId: '',
   cookie: '',
   ticketsNum: 1,
-  sessionNum: 1
+  sessionNum: 1,
+  ticketLessMode: 'low'
 })
 
 onMounted(() => {
@@ -53,17 +62,23 @@ function onClick() {
 <template>
   <div class="m-16 flex justify-center">
     <ElForm class="max-w-screen-md flex-1" :model="form" label-width="120px">
-      <ElFormItem label="演出itemId">
+      <ElFormItem label="演出ID">
         <ElInput v-model="form.itemId" />
       </ElFormItem>
       <ElFormItem label="Cookie">
         <ElInput v-model="form.cookie" />
       </ElFormItem>
-      <ElFormItem label="票数">
+      <ElFormItem label="门票数量">
         <ElInputNumber v-model="form.ticketsNum" :min="1" :max="10" />
       </ElFormItem>
-      <ElFormItem label="票次">
+      <ElFormItem label="门票档次">
         <ElInputNumber v-model="form.sessionNum" :min="1" :max="10" />
+      </ElFormItem>
+      <ElFormItem label="无票模式">
+        <ElRadioGroup v-model="form.ticketLessMode">
+          <ElRadio label="low">低价优先</ElRadio>
+          <ElRadio label="high">高价优先</ElRadio>
+        </ElRadioGroup>
       </ElFormItem>
       <ElFormItem>
         <ElButton type="primary" @click="onClick">确定</ElButton>
