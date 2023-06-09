@@ -6,4 +6,5 @@ declare class damaiRequest {
 
 interface Window {
   baxiaCommon: any
+  __baxia__: any
 }

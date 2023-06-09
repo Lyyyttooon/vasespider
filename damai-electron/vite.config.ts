@@ -21,7 +21,9 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()]
     }),
-    ElementPlus()
+    ElementPlus(),
+    require('tailwindcss'),
+    require('autoprefixer')
   ],
   build: {
     outDir: 'out'

@@ -1,13 +1,29 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
-    <script src="/awsc.js"></script>
-    <script src="/baxiaCommon.js"></script>
-    <script src="/fireyejs.js"></script>
+    <script src="/js/awsc.js"></script>
+    <script src="/js/baxiaCommon.js"></script>
+    <script src="/js/fireyejs.js"></script>
+    <script>
+      if (window.baxiaCommon) {
+        try {
+          window.baxiaCommon.init({
+            checkApiPath: function (i) {
+              return (
+                -1 < i.indexOf('mtop.trade.order.build.h5') ||
+                -1 < i.indexOf('mtop.trade.order.create.h5')
+              )
+            }
+          })
+        } catch (e) {
+          console.error('初始化 baxia 失败', e)
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

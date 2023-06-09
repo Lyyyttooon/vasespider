@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
-import { ElButton, ElForm, ElFormItem } from 'element-plus'
+import { ElButton, ElForm, ElFormItem, ElInput, ElInputNumber } from 'element-plus'
+import { getBxua, getUmid } from '@/utils/baxia'
 
-const form = reactive({
+interface formStruct {
+  [key: string]: string | number
+  itemId: string
+  cookie: string
+  ticketsNum: number
+  sessionNum: number
+}
+
+const form: formStruct = reactive({
   itemId: '',
   cookie: '',
   ticketsNum: 1,
@@ -11,41 +19,57 @@ const form = reactive({
 })
 
 onMounted(() => {
+  getFormData()
   damaiRequest.getTicketsInfo()
+  console.log(getBxua(), getUmid())
+})
 
-  if (window.baxiaCommon) {
-    try {
-      window.baxiaCommon.init({
-        checkApiPath: function (i: string | string[]) {
-          return (
-            -1 < i.indexOf('mtop.trade.order.build.h5') ||
-            -1 < i.indexOf('mtop.trade.order.create.h5')
-          )
-        }
-      })
-    } catch (e) {
-      console.error('初始化 baxia 失败', e)
+function getFormData() {
+  for (let k in form) {
+    let str: string | null = localStorage.getItem(k)
+    if (str === null) {
+      continue
+    }
+    switch (typeof form[k]) {
+      case 'string': {
+        form[k] = str
+        break
+      }
+      case 'number': {
+        form[k] = +str
+        break
+      }
     }
   }
-})
+}
+
+function onClick() {
+  for (let k in form) {
+    localStorage.setItem(k, `${form[k]}`)
+  }
+}
 </script>
 
 <template>
-  <ElForm :model="form" label-width="120px">
-    <ElFormItem label="itemId" label-width="120px">
-      <el-input v-model="form.itemId" />
-    </ElFormItem>
-    <ElFormItem label="cookie" label-width="120px">
-      <el-input v-model="form.cookie" />
-    </ElFormItem>
-    <ElFormItem label="票数" label-width="120px">
-      <el-input v-model="form.ticketsNum" />
-    </ElFormItem>
-    <ElFormItem label="票次" label-width="120px">
-      <el-input v-model="form.ticketsNum" />
-    </ElFormItem>
-    <ElButton>按钮</ElButton>
-  </ElForm>
+  <div class="m-16 flex justify-center">
+    <ElForm class="max-w-screen-md flex-1" :model="form" label-width="120px">
+      <ElFormItem label="演出itemId">
+        <ElInput v-model="form.itemId" />
+      </ElFormItem>
+      <ElFormItem label="Cookie">
+        <ElInput v-model="form.cookie" />
+      </ElFormItem>
+      <ElFormItem label="票数">
+        <ElInputNumber v-model="form.ticketsNum" :min="1" :max="10" />
+      </ElFormItem>
+      <ElFormItem label="票次">
+        <ElInputNumber v-model="form.sessionNum" :min="1" :max="10" />
+      </ElFormItem>
+      <ElFormItem>
+        <ElButton type="primary" @click="onClick">确定</ElButton>
+      </ElFormItem>
+    </ElForm>
+  </div>
 </template>
 
 <style scoped>
