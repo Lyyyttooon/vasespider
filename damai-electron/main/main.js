@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
 
-const { getTicketsInfo } = require('./dm')
+const { getTicketsDetail } = require('./dm')
 
 // 判断命令行脚本的第二参数
 const mode = process.argv[2]
@@ -66,7 +66,7 @@ if (!gotTheLock) {
   // 只有在ready事件被激发后才能创建浏览器窗口
   app.whenReady().then(() => {
     // ipc事件
-    ipcMain.on('getTicketsInfo', getTicketsInfo)
+    ipcMain.on('getTicketsDetail', (_, data) => getTicketsDetail(data))
 
     createWindow()
 

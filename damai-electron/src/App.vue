@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue'
+import { onMounted, reactive, watch } from 'vue'
 import {
   ElButton,
   ElForm,
@@ -10,11 +10,13 @@ import {
   ElRadioGroup
 } from 'element-plus'
 import { getBxua, getUmid } from '@/utils/baxia'
+import { stringLiteral } from '@babel/types'
 
 interface formStruct {
   [key: string]: string | number
   itemId: string
   cookie: string
+  token: string
   ticketsNum: number
   sessionNum: number
 }
@@ -22,6 +24,7 @@ interface formStruct {
 const form: formStruct = reactive({
   itemId: '',
   cookie: '',
+  token: '',
   ticketsNum: 1,
   sessionNum: 1,
   ticketLessMode: 'low'
@@ -29,7 +32,6 @@ const form: formStruct = reactive({
 
 onMounted(() => {
   getFormData()
-  damaiRequest.getTicketsInfo()
   console.log(getBxua(), getUmid())
 })
 
@@ -52,10 +54,31 @@ function getFormData() {
   }
 }
 
+function parseCookie(cookie: string): string {
+  let str = cookie.replace(' ', '')
+  let strArray = str.split(';')
+  for (let i = 0; i < strArray.length; i++) {
+    if (strArray[i].startsWith('_m_h5_tk=')) {
+      str = strArray[i]
+      break
+    }
+  }
+  let tokenWithTime = str.split('=')[1]
+  let token = tokenWithTime.split('_')[0]
+  console.log(token)
+  return token
+}
+
 function onClick() {
+  form.token = parseCookie(form.cookie)
+  localStorage.setItem('token', form.token)
+
   for (let k in form) {
     localStorage.setItem(k, `${form[k]}`)
   }
+
+  console.log(JSON.stringify(form))
+  damaiRequest.getTicketsDetail(JSON.stringify(form))
 }
 </script>
 

@@ -20,7 +20,7 @@
   "main": "main/main.js",
   "scripts": {
     "dev": "vite",
-    "electron:dev": "electron . dev",
+    "electron:dev": "chcp 65001 && electron . dev",
     "build": "run-p type-check build-only",
     "electron": "electron .",
     "preview": "vite preview",
