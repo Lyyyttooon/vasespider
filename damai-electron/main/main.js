@@ -2,10 +2,10 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
 
-const { getTicketsDetail } = require('./dm')
+const { getRequest, postRequest } = require('./dm')
 
 // 判断命令行脚本的第二参数
-const mode = process.argv[2]
+const isDevMode = process.argv[2] === 'dev'
 const gotTheLock = app.requestSingleInstanceLock()
 
 let mainWindow = null
@@ -23,7 +23,7 @@ function createWindow() {
   })
 
   // 判断是否是开发模式
-  if (mode === 'dev') {
+  if (isDevMode) {
     mainWindow.loadURL('http://localhost:5173/') // 前端开发环境地址
     mainWindow.webContents.openDevTools() // 自动打开控制台
   } else {
@@ -66,7 +66,8 @@ if (!gotTheLock) {
   // 只有在ready事件被激发后才能创建浏览器窗口
   app.whenReady().then(() => {
     // ipc事件
-    ipcMain.on('getTicketsDetail', (_, data) => getTicketsDetail(data))
+    ipcMain.handle('getRequest', (_, data) => getRequest(data))
+    ipcMain.handle('postRequest', (_, data) => postRequest(data))
 
     createWindow()
 

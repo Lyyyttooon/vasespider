@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, watch } from 'vue'
+import { onBeforeMount, reactive, watch } from 'vue'
 import {
   ElButton,
   ElForm,
@@ -10,15 +10,17 @@ import {
   ElRadioGroup
 } from 'element-plus'
 import { getBxua, getUmid } from '@/utils/baxia'
-import { stringLiteral } from '@babel/types'
+import { getTicketsInfo, getPerformInfo, buildOrder } from '@/utils/dm'
 
-interface formStruct {
+export interface formStruct {
   [key: string]: string | number
   itemId: string
   cookie: string
   token: string
   ticketsNum: number
   sessionNum: number
+  gradeNum: number
+  ticketLessMode: string
 }
 
 const form: formStruct = reactive({
@@ -27,12 +29,12 @@ const form: formStruct = reactive({
   token: '',
   ticketsNum: 1,
   sessionNum: 1,
+  gradeNum: 1,
   ticketLessMode: 'low'
 })
 
-onMounted(() => {
+onBeforeMount(() => {
   getFormData()
-  console.log(getBxua(), getUmid())
 })
 
 function getFormData() {
@@ -54,6 +56,23 @@ function getFormData() {
   }
 }
 
+async function onClick() {
+  form.token = parseCookie(form.cookie)
+
+  store(form)
+
+  let ticketsInfo = await getTicketsInfo(form)
+  if (ticketsInfo === null) {
+    return
+  }
+  if (ticketsInfo.performIdList.length < form.sessionNum) {
+    return
+  }
+  let performInfo = await getPerformInfo(form, ticketsInfo.performIdList[form.sessionNum - 1])
+  console.log(performInfo)
+  let orderInfo = await buildOrder(form, performInfo.sku.skuId)
+}
+
 function parseCookie(cookie: string): string {
   let str = cookie.replace(' ', '')
   let strArray = str.split(';')
@@ -69,33 +88,30 @@ function parseCookie(cookie: string): string {
   return token
 }
 
-function onClick() {
-  form.token = parseCookie(form.cookie)
-  localStorage.setItem('token', form.token)
-
-  for (let k in form) {
-    localStorage.setItem(k, `${form[k]}`)
+function store(data: formStruct) {
+  for (let k in data) {
+    localStorage.setItem(k, `${data[k]}`)
   }
-
-  console.log(JSON.stringify(form))
-  damaiRequest.getTicketsDetail(JSON.stringify(form))
 }
 </script>
 
 <template>
   <div class="m-16 flex justify-center">
     <ElForm class="max-w-screen-md flex-1" :model="form" label-width="120px">
+      <ElFormItem label="Cookie">
+        <ElInput v-model="form.cookie" />
+      </ElFormItem>
       <ElFormItem label="演出ID">
         <ElInput v-model="form.itemId" />
       </ElFormItem>
-      <ElFormItem label="Cookie">
-        <ElInput v-model="form.cookie" />
+      <ElFormItem label="演出场次">
+        <ElInputNumber v-model="form.sessionNum" :min="1" :max="10" />
       </ElFormItem>
       <ElFormItem label="门票数量">
         <ElInputNumber v-model="form.ticketsNum" :min="1" :max="10" />
       </ElFormItem>
       <ElFormItem label="门票档次">
-        <ElInputNumber v-model="form.sessionNum" :min="1" :max="10" />
+        <ElInputNumber v-model="form.gradeNum" :min="1" :max="10" />
       </ElFormItem>
       <ElFormItem label="无票模式">
         <ElRadioGroup v-model="form.ticketLessMode">

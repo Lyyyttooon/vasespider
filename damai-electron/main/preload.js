@@ -2,5 +2,6 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('damaiRequest', {
-  getTicketsDetail: (data) => ipcRenderer.send('getTicketsDetail', data)
+  getRequest: (data) => ipcRenderer.invoke('getRequest', data),
+  postRequest: (data) => ipcRenderer.invoke('postRequest', data)
 })
