@@ -23,6 +23,7 @@ async function getRequest(str) {
   }).catch((err) => {
     return JSON.stringify(err.data)
   })
+  console.log(resp)
   return JSON.stringify(resp.data)
 }
 

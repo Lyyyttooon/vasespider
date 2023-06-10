@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, reactive, watch } from 'vue'
+import { onBeforeMount, reactive } from 'vue'
 import {
   ElButton,
   ElForm,
@@ -9,8 +9,7 @@ import {
   ElRadio,
   ElRadioGroup
 } from 'element-plus'
-import { getBxua, getUmid } from '@/utils/baxia'
-import { getTicketsInfo, getPerformInfo, buildOrder } from '@/utils/dm'
+import { getTicketsInfo, getPerformInfo, buildOrder, submitOrder } from '@/utils/dm'
 
 export interface formStruct {
   [key: string]: string | number
@@ -71,6 +70,9 @@ async function onClick() {
   let performInfo = await getPerformInfo(form, ticketsInfo.performIdList[form.sessionNum - 1])
   console.log(performInfo)
   let orderInfo = await buildOrder(form, performInfo.sku.skuId)
+  console.log(orderInfo)
+  let submitInfo = await submitOrder(form, orderInfo.data)
+  console.log(submitInfo)
 }
 
 function parseCookie(cookie: string): string {
