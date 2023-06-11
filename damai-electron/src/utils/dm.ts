@@ -154,10 +154,6 @@ export async function submitOrder(form: formStruct, orderInfo: any) {
     }
   }
 
-  const orderHierarchy = {
-    structure: orderInfo.hierarchy.structure
-  }
-
   const orderLinkage = {
     common: {
       compress: orderInfo.linkage.common.compress,
@@ -165,6 +161,10 @@ export async function submitOrder(form: formStruct, orderInfo: any) {
       validateParams: orderInfo.linkage.common.validateParams
     },
     signature: orderInfo.linkage.signature
+  }
+
+  const orderHierarchy = {
+    structure: orderInfo.hierarchy.structure
   }
 
   const feature = {
@@ -177,8 +177,8 @@ export async function submitOrder(form: formStruct, orderInfo: any) {
 
   const params = {
     data: JSON.stringify(orderData),
-    hierarchy: JSON.stringify(orderHierarchy),
-    linkage: JSON.stringify(orderLinkage)
+    linkage: JSON.stringify(orderLinkage),
+    hierarchy: JSON.stringify(orderHierarchy)
   }
 
   console.log({

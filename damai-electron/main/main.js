@@ -13,8 +13,8 @@ let mainWindow = null
 // createWindow()方法来将index.html加载进一个新的BrowserWindow实例。
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
+    width: 1800,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },

@@ -76,18 +76,15 @@ async function onClick() {
 }
 
 function parseCookie(cookie: string): string {
-  let str = cookie.replace(' ', '')
-  let strArray = str.split(';')
+  let strArray = cookie.split('; ')
   for (let i = 0; i < strArray.length; i++) {
     if (strArray[i].startsWith('_m_h5_tk=')) {
-      str = strArray[i]
-      break
+      let str = strArray[i]
+      let token = str.replace('_m_h5_tk=', '').split('_')[0]
+      return token
     }
   }
-  let tokenWithTime = str.split('=')[1]
-  let token = tokenWithTime.split('_')[0]
-  console.log(token)
-  return token
+  return ''
 }
 
 function store(data: formStruct) {
